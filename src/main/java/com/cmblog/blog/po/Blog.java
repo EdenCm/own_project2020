@@ -13,8 +13,6 @@ public class Blog {
 
     private Long id;
     private String title;
-//    @Basic(fetch = FetchType.LAZY)
-//    @Lob //  大字段类型
     private String content;
     private String firstPicture;
     private String flag;
