@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cmblog.blog.dao.IBlogDao">
+    <resultMap id="blogQuery" type="com.cmblog.blog.vo.BlogQuery">
+        <id property="id" column="id"></id>
+        <result property="title" column="title"></result>
+        <result property="recommend" column="recommend"></result>
+        <result property="updateTime" column="update_time"></result>
+        <result property="published" column="published"></result>
+        <result property="typeId" column="type_id"></result>
+        <association property="type" javaType="com.cmblog.blog.po.Type">
+            <id property="id" column="id"></id>
+            <result property="name" column="name"></result>
+        </association>
+    </resultMap>
+    <!--后端点击博客后的查询-->
+    <select id="getAllBlogQuery" resultMap="blogQuery">
+        select b.id,b.title,b.recommend,b.update_time,b.type_id , b.published ,t.id ,t.name  from t_blog b
+          left outer join t_type t  on b.type_id =  t.id order by b.update_time desc
+    </select>
+
+
+    <select id="findBlogByQuryCondition" parameterType="com.cmblog.blog.vo.BlogQueryByCondition" resultMap="blogQuery">
+        <bind name="pattern" value="'%' + title + '%'" />
+        select b.id ,b.title ,b.recommend, b.update_time, b.type_id,b.published,t.id,t.name
+        from t_blog b ,t_type t
+        <where>
+        <if test="1==1">
+            b.id = t.id
+        </if>
+        <if test="typeId != null">
+            and t.id = #{typeId}
+        </if>
+        <if test="recommend2 != null">
+            and b.recommend = #{recommend2}
+        </if>
+        <if test="title != null">
+            and b.title like #{pattern}
+        </if>
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.cmblog.blog.po.Blog" >
+        insert  into t_blog
+        (id,title,content,flag,create_time,commentabled,published,appreciation,recommend,views,first_picture,share_statement,type_id,update_time,description,tag_ids)
+        values (#{id}, #{title},#{content},#{flag},#{createTime},#{commentabled},#{published},#{appreciation},#{recommend},#{views},#{firstPicture},#{shareStatement},#{typeId},#{updateTime},#{description},#{tagIds})
+    </insert>
+    
+    <insert id="saveTagAndBlog" >
+        insert  into  t_blog_tag (tag_id, blog_id) values (#{tagId},#{blogId})
+    </insert>
+
+
+    <select id="findOne" parameterType="Long" resultType="com.cmblog.blog.po.Blog">
+        select * from t_blog where id = #{id}
+    </select>
+
+    <delete id="delBlogAndTag" parameterType="Long" >
+        delete  from t_blog_tag where blog_id = #{blogId}
+    </delete>
+
+    <update id="updateBlog"  parameterType="com.cmblog.blog.po.Blog">
+        update t_blog set published = #{published},flag = #{flag} ,
+        title = #{title}, content = #{content}, type_id = #{typeId}, tag_ids = #{tagIds},
+        first_picture = #{firstPicture} , description = #{description} , recommend = #{recommend} ,
+        share_statement = #{shareStatement}, appreciation = #{appreciation},
+        commentabled = #{commentabled} ,update_time = #{updateTime} where id = #{id};
+    </update>
+
+
+    <resultMap id="indexPageBlog" type="com.cmblog.blog.vo.IndexPageBlog">
+        <id property="id" column="id"></id>
+        <result property="title" column="title"></result>
+        <result property="description" column="description"></result>
+        <result property="views" column="views"></result>
+        <result property="createTime" column="create_time"></result>
+        <result property="typeId" column="type_id"></result>
+        <result property="firstPicture" column="first_picture"></result>
+        <result property="userId" column="user_id"></result>
+        <association property="type" javaType="com.cmblog.blog.po.Type">
+            <id property="id" column="id"></id>
+            <result property="name" column="name"></result>
+        </association>
+        <association property="user" javaType="com.cmblog.blog.po.User">
+            <id property="id" column="id"></id>
+            <result property="nickname" column="nickname"></result>
+            <result property="avatar" column="avatar"></result>
+        </association>
+    </resultMap>
+
+    <select id="findIndexPageBlog" resultMap="indexPageBlog">
+        select b.id,b.title,b.description,b.views,b.update_time,b.type_id,b.first_picture,t.id,t.name,u.id,u.nickname,u.avatar  from t_blog b
+          left outer join t_type t  on b.type_id =  t.id
+          left outer join t_user u on  b.user_id = u.id
+          order by b.update_time desc
+    </select>
+
+    <!--寻找最近的文章-->
+    <select id="findTop" parameterType="java.lang.Integer" resultType="com.cmblog.blog.po.Blog">
+        select * from t_blog order by create_time desc limit 0,#{size}
+
+    </select>
+
+    <select id="findByQuery" parameterType="java.lang.String" resultMap="indexPageBlog">
+        select b.id,b.title,b.description,b.views,b.update_time,b.type_id,b.first_picture,t.id,t.name,u.id,u.nickname,u.avatar
+         from t_blog b
+          left outer join t_type t  on b.type_id =  t.id
+          left outer join t_user u on  b.user_id = u.id
+          where b.title like #{query} or b.description like #{query}
+          order by b.update_time desc
+    </select>
+
+
+    <update id="updateViews"  parameterType="java.lang.Long">
+        update t_blog set views = views + 1 where id = #{id};
+    </update>
+
+
+    <!--<select id="viewOneBlog" parameterType="java.lang.Long">-->
+        <!--select  from t_blog b left outer join t-->
+    <!--</select>-->
+
+    <select id="findBlogByTypeId" parameterType="java.lang.Long" resultMap="indexPageBlog">
+          select b.id,b.title,b.description,b.views,b.update_time,b.type_id,b.first_picture,t.id,t.name,u.id,u.nickname,u.avatar  from t_blog b
+          left outer join t_type t  on b.type_id =  t.id
+          left outer join t_user u on  b.user_id = u.id
+          where b.type_id = #{id}
+          order by b.update_time desc
+    </select>
+
+    <select id="findBlogByTagId" parameterType="java.lang.Long" resultMap="indexPageBlog">
+        select b.id,b.title,b.description,b.views,b.update_time,b.type_id,b.first_picture,t.id,t.name,u.id,u.nickname,u.avatar
+        from  t_blog_tag tb
+        left join t_blog b  on tb.blog_id = b.id
+        left join t_type t on b.type_id = t.id
+        left join t_user u on b.user_id = u.id
+        where tb.tag_id = #{id}
+        order by b.update_time desc
+    </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        select count(id) from t_blog
+    </select>
+
+    <select id="findGroupYear" resultType="java.lang.String">
+        select date_format(b.update_time,'%Y') as year
+        from t_blog b group by year
+        order by year desc
+    </select>
+
+    <select id="findByYear" parameterType="java.lang.String" resultType="com.cmblog.blog.po.Blog">
+        select * from t_blog b where
+        date_format(b.update_time,'%Y') = #{year}
+    </select>
+</mapper>

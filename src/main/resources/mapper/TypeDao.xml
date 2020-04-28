@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cmblog.blog.dao.ITypeDao">
+
+    <select id="findAll" resultType="com.cmblog.blog.po.Type">
+        select * from t_type
+    </select>
+
+    <select id="findOne" parameterType="Long" resultType="com.cmblog.blog.po.Type">
+        select * from t_type where id  = #{id}
+    </select>
+
+    <insert id="save" parameterType="com.cmblog.blog.po.Type">
+        insert into t_type (name) value (#{name})
+    </insert>
+
+    <update id="updateType" parameterType="com.cmblog.blog.po.Type">
+        update t_type set name = #{name} where id = #{id}
+    </update>
+    <delete id="delete" parameterType="Long">
+        delete from  t_type where id = #{id}
+    </delete>
+
+    <select id="findByName" parameterType="String" resultType="com.cmblog.blog.po.Type">
+        select * from t_type where name = #{name}
+    </select>
+
+
+    <!--<resultMap id="topType" type="com.cmblog.blog.po.Type">-->
+        <!--<id column="id" property="id"></id>-->
+        <!--<result column="name" property="name"></result>-->
+        <!--<association property="blogs" javaType="com.cmblog.blog.po.Blog">-->
+            <!--<id column="id" property="id"></id>-->
+
+        <!--</association>-->
+    <!--</resultMap>-->
+    <!--topType-->
+    <select id="findTop" parameterType="java.lang.Integer" resultType="com.cmblog.blog.vo.TypeTop">
+        select t.name,count(b.id) as tcount,t.id as typeId
+        from t_type t left join t_blog b on
+        t.id = b.type_id
+        group by t.name
+        order by tcount desc limit 0,#{size}
+    </select>
+</mapper>

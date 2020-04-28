@@ -1,0 +1,14 @@
+spring:
+  thymeleaf:
+    mode: HTML
+  profiles:
+    active: dev
+  messages:
+    basename: i18n/messages
+
+comment.avatar : /images/commentAvatar.jpg
+
+article.firstPicturePath : E:/Postgraduate/JAVA/project/myblog/src/main/resources/static/images/firstPictures/
+
+
+

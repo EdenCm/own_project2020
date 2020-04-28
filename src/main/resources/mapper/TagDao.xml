@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cmblog.blog.dao.ITagDao">
+
+    <select id="findAllTagView" resultType="com.cmblog.blog.po.Tag">
+        select * from t_tag
+    </select>
+
+    <select id="findOne" parameterType="Long" resultType="com.cmblog.blog.po.Tag">
+        select  * from t_tag where  id = #{id}
+    </select>
+
+    <insert id="save" parameterType="com.cmblog.blog.po.Tag">
+        insert into t_tag (name) value (#{name})
+    </insert>
+
+    <update id="updateTag" parameterType="com.cmblog.blog.po.Tag">
+        update t_tag set name = #{name} where id = #{id}
+    </update>
+    <delete id="delete" parameterType="Long">
+        delete from  t_tag where id = #{id}
+    </delete>
+
+    <select id="findByName" parameterType="String" resultType="com.cmblog.blog.po.Tag">
+        select * from t_tag where name = #{name}
+    </select>
+
+    <select id="findTop" parameterType="java.lang.Integer" resultType="com.cmblog.blog.vo.TagTop">
+         select  * from (select tb.tag_id tag_id,tg.name name, count(tb.id) tcount from t_blog_tag tb
+        left outer join t_tag tg on tb.tag_id= tg.id
+          group by tb.tag_id  order by tcount desc ) tgc limit 0,#{size}
+    </select>
+    <select id="findTagsByBlogId" parameterType="java.lang.Long" resultType="com.cmblog.blog.po.Tag">
+        select t.name as name ,t.id as id  from t_blog_tag tb left  outer join t_tag t on tb.tag_id = t.id where tb.blog_id = #{id}
+    </select>
+</mapper>

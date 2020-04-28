@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cmblog.blog.dao.ICommentDao">
+
+    <insert id="save" parameterType="com.cmblog.blog.po.Comment">
+        insert  into t_comment (nickname, email, content, avatar, blog_id, parent_comment_id)
+        values
+        (#{nickname} ,#{email},#{content},#{avatar},#{blogId},#{parentCommentId})
+    </insert>
+
+    <select id="findByBlogId" parameterType="java.lang.Long" resultType="com.cmblog.blog.po.Comment">
+        select * from t_comment where blog_id = #{id} order by create_time desc
+    </select>
+
+    <select id="findOne" parameterType="java.lang.Long" resultType="com.cmblog.blog.po.Comment">
+        select * from t_comment where id = #{id}
+    </select>
+
+    <select id="findByBlogIdAndParentCommentNull" parameterType="java.lang.Long" resultType="com.cmblog.blog.po.Comment">
+        select * from t_comment where blog_id = #{id} and parent_comment_id = -1
+    </select>
+
+    <resultMap id="commentParent" type="com.cmblog.blog.po.Comment">
+        <id column="id" property="id"></id>
+        <result property="nickname" column="nickname"></result>
+        <result property="email" column="email"></result>
+        <result property="avatar" column="avatar"></result>
+        <result property="content" column="content"></result>
+        <result property="createTime" column="create_time"></result>
+        <result property="blogId" column="blog_id"></result>
+        <!--<result property="adminComment" column="admin_comment"></result>-->
+        <result property="parentCommentId" column="parent_comment_id"></result>
+        <association property="parentComment" javaType="com.cmblog.blog.po.Comment">
+            <id column="pid" property="id"></id>
+            <result property="nickname" column="pnickname"></result>
+            <result property="email" column="pemail"></result>
+            <result property="avatar" column="pavatar"></result>
+            <result property="content" column="pcontent"></result>
+            <result property="createTime" column="pcreate_time"></result>
+            <result property="blogId" column="pblog_id"></result>
+            <!--<result property="adminComment" column="admin_comment"></result>-->
+            <result property="parentCommentId" column="pparent_comment_id"></result>
+        </association>
+    </resultMap>
+    <select id="findChildComment" parameterType="java.lang.Long" resultMap="commentParent">
+        select c.id ,c.content,c.create_time,c.blog_id,
+        c.parent_comment_id,c.nickname,c.avatar,c.email,
+         p.id as pid,p.nickname as pnickname,p.content as pcontent,
+         p.avatar as pavatar,p.email as pemail,p.blog_id as pblog_id,
+         p.parent_comment_id as pparent_comment_id from t_comment c
+        left join t_comment p on c.parent_comment_id = p.id
+        where c.parent_comment_id = #{id}
+
+    </select>
+</mapper>
